@@ -2,10 +2,12 @@
 
 // eslint-disable-next-line unicorn/prefer-node-protocol -- Parcel doesn't support protocol imports
 const path = require('path');
-// @ts-expect-error: works
-const { getProjectDirpath } = require('lion-utils');
+const { getMonorepoDirpath } = require('@tunnel/get-monorepo');
 
-const monorepoDirpath = getProjectDirpath(__dirname, { monorepoRoot: true });
+const monorepoDirpath = getMonorepoDirpath(__dirname);
+if (monorepoDirpath === undefined) {
+	throw new Error('Could not get monorepo directory')
+}
 
 /**
 	@param {object} args
