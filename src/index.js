@@ -1,5 +1,7 @@
-const { expandTildeImport } = require('./utils/tilde-imports.js');
+// @ts-check
+
+const { createTildeImportExpander } = require('./utils/tilde-imports.js');
 
 module.exports = {
-	expandTildeImport
+	createTildeImportExpander
 };

@@ -1,0 +1,12 @@
+{
+	"extends": "lionconfig/tsconfig.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"rootDir": ".",
+		"paths": {
+			"~/*": ["./src/*"],
+			"~test/*": ["./test/*"],
+		}
+	},
+	"include": ["./src", "./test"]
+}

@@ -1,3 +1,5 @@
+// @ts-check
+
 import exports from './index.js';
 
-export const { expandTildeImport } = exports;
+export const { createTildeImportExpander } = exports;

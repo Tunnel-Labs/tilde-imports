@@ -1,0 +1,3 @@
+packages:
+  - scope-a/*
+  - scope-b/*

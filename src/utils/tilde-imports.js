@@ -2,43 +2,73 @@
 
 // eslint-disable-next-line unicorn/prefer-node-protocol -- Parcel doesn't support protocol imports
 const path = require('path');
-const { getMonorepoDirpath } = require('@tunnel/get-monorepo');
-
-const monorepoDirpath = getMonorepoDirpath(__dirname);
-if (monorepoDirpath === undefined) {
-	throw new Error('Could not get monorepo directory')
-}
+const yaml = require('yaml');
+const glob = require('fast-glob');
+const Trie = /** @type {typeof import('mnemonist/trie').default} */ (
+	/** @type {unknown} */ (require('mnemonist/trie'))
+);
 
 /**
 	@param {object} args
-	@param {string} args.importSpecifier
-	@param {string} args.importerFilePath
-	@returns {string}
+	@param {string} args.monorepoDirpath
+	@returns
 */
-exports.expandTildeImport = ({ importSpecifier, importerFilePath }) => {
-	if (!importSpecifier.startsWith('~')) {
-		return importSpecifier;
-	}
+module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
+	const packageDirpathGlobs = yaml.parse(
+		path.join(monorepoDirpath, 'pnpm-workspace.yaml')
+	).packages;
 
-	const packagePathslug = path
-		.relative(monorepoDirpath, importerFilePath)
-		// Get the first `<package>/<path>` segment.
-		.split('/')
-		.slice(0, 2)
-		.join('/');
+	const packageJsonFilepathsArray = glob.sync(
+		packageDirpathGlobs.map((packageDirpathGlob) =>
+			path.join(packageDirpathGlob, 'package.json')
+		)
+	);
 
-	// If the module starts with `~/`, it is relative to the `src/` folder of the package.
-	if (importSpecifier.startsWith('~/')) {
-		return path.join(
-			monorepoDirpath,
-			packagePathslug,
-			importSpecifier.replace('~/', 'src/')
-		);
-	} else {
-		return path.join(
-			monorepoDirpath,
-			packagePathslug,
-			importSpecifier.replace('~', '')
-		);
-	}
+	const packageJsonFilepaths = Trie.from(packageJsonFilepathsArray);
+
+	/**
+		@param {object} args
+		@param {string} args.importSpecifier
+		@param {string} args.importerFilePath
+		@returns {string}
+	*/
+	return function expandTildeImport({ importSpecifier, importerFilePath }) {
+		if (!importSpecifier.startsWith('~')) {
+			return importSpecifier;
+		}
+
+		const importerPackageJsonFilepaths =
+			packageJsonFilepaths.find(importerFilePath);
+
+		/** @type {string} */
+		let importerPackageJsonFilepath;
+		if (importerPackageJsonFilepaths.length === 0) {
+			throw new Error(
+				`Could not find package root for importer file "${importerFilePath}"`
+			);
+		} else if (importerPackageJsonFilepaths.length > 1) {
+			console.warn(
+				'Found multiple package.json files for importer file "%s": %s',
+				importerFilePath,
+				importerPackageJsonFilepaths.join(', '),
+				'Using the first one.'
+			);
+		}
+
+		importerPackageJsonFilepath = importerPackageJsonFilepaths[0];
+		const importerPackageDirpath = path.dirname(importerPackageJsonFilepath);
+
+		// If the module starts with `~/`, it is relative to the `src/` folder of the package.
+		if (importSpecifier.startsWith('~/')) {
+			return path.join(
+				importerPackageDirpath,
+				importSpecifier.replace('~/', 'src/')
+			);
+		} else {
+			return path.join(
+				importerPackageDirpath,
+				importSpecifier.replace('~', '')
+			);
+		}
+	};
 };
