@@ -97,14 +97,14 @@ describe('expands tilde imports correctly', () => {
 			expandTildeImport({
 				importerFilePath: path.join(
 					categorizedPackagesProjectDirpath,
-					'category-b/package-a/src/index.js'
+					'category-b/package-c/src/index.js'
 				),
 				importSpecifier: '~/other.js'
 			})
 		).toBe(
 			path.join(
 				categorizedPackagesProjectDirpath,
-				'category-b/package-a/src/other.js'
+				'category-b/package-c/src/other.js'
 			)
 		);
 
@@ -112,14 +112,14 @@ describe('expands tilde imports correctly', () => {
 			expandTildeImport({
 				importerFilePath: path.join(
 					categorizedPackagesProjectDirpath,
-					'category-b/package-b/src/index.js'
+					'category-b/package-d/src/index.js'
 				),
 				importSpecifier: '~/other.js'
 			})
 		).toBe(
 			path.join(
 				categorizedPackagesProjectDirpath,
-				'category-b/package-b/src/other.js'
+				'category-b/package-d/src/other.js'
 			)
 		);
 	});

@@ -41,7 +41,9 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 
 	const packageDirpathsTrie = new Trie(Array);
 	for (const packageJsonFilepath of packageJsonFilepathsArray) {
-		packageDirpathsTrie.add(path.dirname(packageJsonFilepath).split('/'));
+		packageDirpathsTrie.add(
+			path.dirname(packageJsonFilepath).slice(1).split('/')
+		);
 	}
 
 	/**
@@ -55,35 +57,44 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 			return importSpecifier;
 		}
 
-		const importerPackageDirpaths =
-			packageDirpathsTrie.getPrefixes(importerFilePath);
+		const importerPackageDirpathPartArrays = packageDirpathsTrie.getPrefixes(
+			importerFilePath.slice(1).split('/')
+		);
 
 		/** @type {string} */
-		let importerPackageDirpath;
-		if (importerPackageDirpaths.length === 0) {
+		let importerPackageDirpathPartArray;
+		if (importerPackageDirpathPartArrays.length === 0) {
 			throw new Error(
 				`Could not find package root for importer file "${importerFilePath}"`
 			);
-		} else if (importerPackageDirpaths.length > 1) {
+		} else if (importerPackageDirpathPartArrays.length > 1) {
 			console.warn(
 				'Found multiple package.json files for importer file "%s": %s',
 				importerFilePath,
-				importerPackageDirpaths.join(', '),
+				importerPackageDirpathPartArrays
+					.map((importerPackageDirpathPartArray) =>
+						importerPackageDirpathPartArray.join('/')
+					)
+					.join(', '),
 				'Using the first one.'
 			);
 		}
 
-		importerPackageDirpath = /** @type {string} */ (importerPackageDirpaths[0]);
+		importerPackageDirpathPartArray = /** @type {string} */ (
+			importerPackageDirpathPartArrays[0]
+		);
 
 		// If the module starts with `~/`, it is relative to the `src/` folder of the package.
 		if (importSpecifier.startsWith('~/')) {
 			return path.join(
-				importerPackageDirpath,
+				'/',
+				...importerPackageDirpathPartArray,
 				importSpecifier.replace('~/', 'src/')
 			);
 		} else {
 			return path.join(
-				importerPackageDirpath,
+				'/',
+				...importerPackageDirpathPartArray,
 				importSpecifier.replace('~', '')
 			);
 		}
