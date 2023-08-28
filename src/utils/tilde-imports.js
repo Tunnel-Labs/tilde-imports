@@ -37,8 +37,9 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 
 	const packageJsonFilepathsArray = glob.sync(
 		packageDirpathGlobs.map((/** @type {string} */ packageDirpathGlob) =>
-			path.join(packageDirpathGlob, 'package.json')
-		)
+			path.join(monorepoDirpath, packageDirpathGlob, 'package.json')
+		),
+		{ absolute: true }
 	);
 
 	const packageDirpaths = Trie.from(
@@ -46,6 +47,8 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 			path.dirname(packageJsonFilepath)
 		)
 	);
+
+	console.log(packageDirpaths);
 
 	/**
 		@param {object} args
