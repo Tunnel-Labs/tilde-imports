@@ -1,13 +1,10 @@
 // @ts-check
 
-// eslint-disable-next-line unicorn/prefer-node-protocol -- Parcel doesn't support protocol imports
-const path = require('path');
+const path = require('pathe');
 const fs = require('fs');
 const yaml = require('yaml');
 const glob = require('fast-glob');
-const Trie = /** @type {typeof import('mnemonist/trie').default} */ (
-	/** @type {unknown} */ (require('mnemonist/trie'))
-);
+const Trie = require('./trie.js');
 
 /**
 	@param {object} args
@@ -42,13 +39,10 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 		{ absolute: true }
 	);
 
-	const packageDirpaths = Trie.from(
-		packageJsonFilepathsArray.map((packageJsonFilepath) =>
-			path.dirname(packageJsonFilepath)
-		)
-	);
-
-	console.log(packageDirpaths);
+	const packageDirpathsTrie = new Trie(Array);
+	for (const packageJsonFilepath of packageJsonFilepathsArray) {
+		packageDirpathsTrie.add(path.dirname(packageJsonFilepath).split('/'));
+	}
 
 	/**
 		@param {object} args

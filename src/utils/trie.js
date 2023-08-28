@@ -16,8 +16,7 @@ class Trie extends TrieMap {
 	static SENTINEL = String.fromCharCode(0);
 
 	constructor(token) {
-		this.mode = token === Array ? 'array' : 'string';
-		this.clear();
+		super(token);
 	}
 
 	/**
@@ -42,8 +41,8 @@ class Trie extends TrieMap {
 		@returns {Trie}
 	*/
 	add(prefix) {
-		var node = this.root,
-			token;
+		let node = this.root;
+		let token;
 
 		for (var i = 0, l = prefix.length; i < l; i++) {
 			token = prefix[i];
@@ -57,6 +56,26 @@ class Trie extends TrieMap {
 		node[Trie.SENTINEL] = true;
 
 		return this;
+	}
+
+	/**
+		Get all the items in the trie that are prefixes of the given value.
+	*/
+	getPrefixes(value) {
+		const prefixes = [];
+		let node = this.root;
+		let token;
+
+		for (let i = 0; i < value.length; i++) {
+			token = value[i];
+			node = node[token];
+
+			if (typeof node === 'undefined') return prefixes;
+
+			if (node[Trie.SENTINEL]) prefixes.push(value.slice(0, i + 1));
+		}
+
+		return prefixes;
 	}
 
 	/**

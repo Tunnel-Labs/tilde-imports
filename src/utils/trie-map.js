@@ -54,7 +54,7 @@ class TrieMap {
 		let node = this.root;
 		let token;
 
-		for (let i = 0, l = prefix.length; i < l; i++) {
+		for (let i = 0; i < prefix.length; i++) {
 			token = prefix[i];
 
 			node = node[token] || (node[token] = {});
@@ -79,7 +79,7 @@ class TrieMap {
 		let node = this.root;
 		let token;
 
-		for (let i = 0, l = prefix.length; i < l; i++) {
+		for (let i = 0; i < prefix.length; i++) {
 			token = prefix[i];
 
 			node = node[token] || (node[token] = {});
@@ -130,7 +130,7 @@ class TrieMap {
 		let parent;
 		let token;
 
-		for (let i = 0; prefix.length < l; i++) {
+		for (let i = 0; i < prefix.length; i++) {
 			token = prefix[i];
 			parent = node;
 			node = node[token];
@@ -281,13 +281,15 @@ class TrieMap {
 	 */
 	prefixes(prefix) {
 		let node = this.root;
-		(nodeStack = []), (prefixStack = []), token, i, l;
+		const nodeStack = [];
+		const prefixStack = [];
+		let token;
 
 		const isString = this.mode === 'string';
 
 		// Resolving initial prefix
 		if (prefix) {
-			for (i = 0, l = prefix.length; i < l; i++) {
+			for (let i = 0; i < prefix.length; i++) {
 				token = prefix[i];
 				node = node[token];
 
