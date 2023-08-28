@@ -1,6 +1,6 @@
 {
 	"name": "tilde-imports",
-	"version": "1.0.1",
+	"version": "2.0.0",
 	"type": "commonjs",
 	"exports": {
 		".": {
@@ -24,5 +24,10 @@
 		"obliterator": "^2.0.4",
 		"vitest": "^0.34.3",
 		"typescript": "^5.2.2"
-	}
+	},
+	"files": [
+		"src",
+		"readme.md",
+		"package.json"
+	]
 }
