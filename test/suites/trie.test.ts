@@ -219,14 +219,14 @@ describe('Trie', function () {
 		trie.add('rat');
 		trie.add('rate');
 
-		let prefixes = [...trie.prefixes()]
+		let prefixes = [...trie.prefixes()];
 
 		assert.deepStrictEqual(prefixes, ['rat', 'rate']);
 
 		trie.add('rater');
 		trie.add('rates');
 
-		prefixes = [...trie.keys('rate')]
+		prefixes = [...trie.keys('rate')];
 
 		assert.deepStrictEqual(prefixes, ['rate', 'rates', 'rater']);
 	});
@@ -250,5 +250,16 @@ describe('Trie', function () {
 
 		assert.strictEqual(trie.size, 2);
 		assert.deepStrictEqual(trie.has('roman'), true);
+	});
+
+	it('should retrieve the correct prefixes for a value', function () {
+		const trie = new Trie();
+
+		trie.add('rat');
+		trie.add('rate');
+		trie.add('rater');
+		trie.add('rates');
+
+		assert.deepStrictEqual(trie.getPrefixes('rates'), ['rat', 'rate', 'rates']);
 	});
 });
