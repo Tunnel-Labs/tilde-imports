@@ -36,12 +36,16 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 	}
 
 	const packageJsonFilepathsArray = glob.sync(
-		packageDirpathGlobs.map((packageDirpathGlob) =>
+		packageDirpathGlobs.map((/** @type {string} */ packageDirpathGlob) =>
 			path.join(packageDirpathGlob, 'package.json')
 		)
 	);
 
-	const packageJsonFilepaths = Trie.from(packageJsonFilepathsArray);
+	const packageDirpaths = Trie.from(
+		packageJsonFilepathsArray.map((packageJsonFilepath) =>
+			path.dirname(packageJsonFilepath)
+		)
+	);
 
 	/**
 		@param {object} args
@@ -54,26 +58,24 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 			return importSpecifier;
 		}
 
-		const importerPackageJsonFilepaths =
-			packageJsonFilepaths.find(importerFilePath);
+		const importerPackageDirpaths = packageDirpaths.find(importerFilePath);
 
 		/** @type {string} */
-		let importerPackageJsonFilepath;
-		if (importerPackageJsonFilepaths.length === 0) {
+		let importerPackageDirpath;
+		if (importerPackageDirpaths.length === 0) {
 			throw new Error(
 				`Could not find package root for importer file "${importerFilePath}"`
 			);
-		} else if (importerPackageJsonFilepaths.length > 1) {
+		} else if (importerPackageDirpaths.length > 1) {
 			console.warn(
 				'Found multiple package.json files for importer file "%s": %s',
 				importerFilePath,
-				importerPackageJsonFilepaths.join(', '),
+				importerPackageDirpaths.join(', '),
 				'Using the first one.'
 			);
 		}
 
-		importerPackageJsonFilepath = importerPackageJsonFilepaths[0];
-		const importerPackageDirpath = path.dirname(importerPackageJsonFilepath);
+		importerPackageDirpath = /** @type {string} */ (importerPackageDirpaths[0]);
 
 		// If the module starts with `~/`, it is relative to the `src/` folder of the package.
 		if (importSpecifier.startsWith('~/')) {
