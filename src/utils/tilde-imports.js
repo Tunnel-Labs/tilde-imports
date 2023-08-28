@@ -2,6 +2,7 @@
 
 // eslint-disable-next-line unicorn/prefer-node-protocol -- Parcel doesn't support protocol imports
 const path = require('path');
+const fs = require('fs');
 const yaml = require('yaml');
 const glob = require('fast-glob');
 const Trie = /** @type {typeof import('mnemonist/trie').default} */ (
@@ -14,9 +15,25 @@ const Trie = /** @type {typeof import('mnemonist/trie').default} */ (
 	@returns
 */
 module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
+	const pnpmWorkspaceFilepath = path.join(
+		monorepoDirpath,
+		'pnpm-workspace.yaml'
+	);
+	if (!fs.existsSync(pnpmWorkspaceFilepath)) {
+		throw new Error(
+			`Could not find pnpm-workspace.yaml file at "${pnpmWorkspaceFilepath}"`
+		);
+	}
+
 	const packageDirpathGlobs = yaml.parse(
-		path.join(monorepoDirpath, 'pnpm-workspace.yaml')
-	).packages;
+		fs.readFileSync(pnpmWorkspaceFilepath, 'utf8')
+	)?.packages;
+
+	if (!packageDirpathGlobs) {
+		throw new Error(
+			`Could not find "packages" property in pnpm-workspace.yaml file at "${pnpmWorkspaceFilepath}"`
+		);
+	}
 
 	const packageJsonFilepathsArray = glob.sync(
 		packageDirpathGlobs.map((packageDirpathGlob) =>

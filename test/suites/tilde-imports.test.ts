@@ -1,4 +1,4 @@
-import { createTildeImportExpander } from '~/index.js';
+import { createTildeImportExpander } from '../../src/index.js';
 import { test, expect, describe } from 'vitest';
 import { join } from 'desm';
 import path from 'pathe';
