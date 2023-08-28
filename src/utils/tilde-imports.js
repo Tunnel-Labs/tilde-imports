@@ -55,7 +55,8 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 			return importSpecifier;
 		}
 
-		const importerPackageDirpaths = packageDirpaths.find(importerFilePath);
+		const importerPackageDirpaths =
+			packageDirpathsTrie.getPrefixes(importerFilePath);
 
 		/** @type {string} */
 		let importerPackageDirpath;

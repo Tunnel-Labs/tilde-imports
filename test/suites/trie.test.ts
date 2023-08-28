@@ -1,10 +1,8 @@
 import { describe, it, assert } from 'vitest';
 import Trie from '../../src/utils/trie.js';
-import take from 'obliterator';
 
 const SENTINEL = Trie.SENTINEL;
-
-let inspect = require('util').inspect;
+const inspect = require('util').inspect;
 if (inspect.defaultOptions) inspect.defaultOptions.depth = null;
 
 describe('Trie', function () {
@@ -221,14 +219,14 @@ describe('Trie', function () {
 		trie.add('rat');
 		trie.add('rate');
 
-		let prefixes = take(trie.prefixes());
+		let prefixes = [...trie.prefixes()]
 
 		assert.deepStrictEqual(prefixes, ['rat', 'rate']);
 
 		trie.add('rater');
 		trie.add('rates');
 
-		prefixes = take(trie.keys('rate'));
+		prefixes = [...trie.keys('rate')]
 
 		assert.deepStrictEqual(prefixes, ['rate', 'rates', 'rater']);
 	});

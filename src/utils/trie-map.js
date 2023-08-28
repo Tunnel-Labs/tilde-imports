@@ -229,9 +229,8 @@ class TrieMap {
 		Method returning an iterator over the trie's values.
 
 		@param  {string|array} [prefix] - Optional starting prefix.
-		@return {Iterator}
 	*/
-	values(prefix) {
+	*values(prefix) {
 		let node = this.root;
 		const nodeStack = [];
 		let token;
@@ -249,37 +248,34 @@ class TrieMap {
 
 		nodeStack.push(node);
 
-		return function* () {
-			let currentNode;
-			let hasValue = false;
-			let k;
+		let currentNode;
+		let hasValue = false;
+		let k;
 
-			while (nodeStack.length) {
-				currentNode = nodeStack.pop();
+		while (nodeStack.length) {
+			currentNode = nodeStack.pop();
 
-				for (k in currentNode) {
-					if (k === TrieMap.SENTINEL) {
-						hasValue = true;
-						continue;
-					}
-
-					nodeStack.push(currentNode[k]);
+			for (k in currentNode) {
+				if (k === TrieMap.SENTINEL) {
+					hasValue = true;
+					continue;
 				}
 
-				if (hasValue) {
-					yield currentNode[TrieMap.SENTINEL];
-				}
+				nodeStack.push(currentNode[k]);
 			}
-		};
+
+			if (hasValue) {
+				yield currentNode[TrieMap.SENTINEL];
+			}
+		}
 	}
 
 	/**
-	 * Method returning an iterator over the trie's prefixes.
-	 *
-	 * @param  {string|array} [prefix] - Optional starting prefix.
-	 * @return {Iterator}
-	 */
-	prefixes(prefix) {
+		Method returning an iterator over the trie's prefixes.
+
+		@param  {string|array} [prefix] - Optional starting prefix.
+	*/
+	*prefixes(prefix) {
 		let node = this.root;
 		const nodeStack = [];
 		const prefixStack = [];
@@ -303,42 +299,39 @@ class TrieMap {
 		nodeStack.push(node);
 		prefixStack.push(prefix);
 
-		return function* () {
-			let currentNode;
-			let currentPrefix;
-			let hasValue = false;
-			let k;
+		let currentNode;
+		let currentPrefix;
+		let hasValue = false;
+		let k;
 
-			while (nodeStack.length) {
-				currentNode = nodeStack.pop();
-				currentPrefix = prefixStack.pop();
+		while (nodeStack.length) {
+			currentNode = nodeStack.pop();
+			currentPrefix = prefixStack.pop();
 
-				for (k in currentNode) {
-					if (k === TrieMap.SENTINEL) {
-						hasValue = true;
-						continue;
-					}
-
-					nodeStack.push(currentNode[k]);
-					prefixStack.push(
-						isString ? currentPrefix + k : currentPrefix.concat(k)
-					);
+			for (k in currentNode) {
+				if (k === TrieMap.SENTINEL) {
+					hasValue = true;
+					continue;
 				}
 
-				if (hasValue) {
-					yield currentPrefix;
-				}
+				nodeStack.push(currentNode[k]);
+				prefixStack.push(
+					isString ? currentPrefix + k : currentPrefix.concat(k)
+				);
 			}
-		};
+
+			if (hasValue) {
+				yield currentPrefix;
+			}
+		}
 	}
 
 	/**
 		Method returning an iterator over the trie's entries.
 
-		@param  {string|array} [prefix] - Optional starting prefix.
-		@return {Iterator}
+		@param  {string | Array} [prefix] - Optional starting prefix.
 	*/
-	entries() {
+	*entries(prefix) {
 		let node = this.root;
 		const nodeStack = [];
 		const prefixStack = [];
@@ -362,33 +355,31 @@ class TrieMap {
 		nodeStack.push(node);
 		prefixStack.push(prefix);
 
-		return function* () {
-			let currentNode;
-			let currentPrefix;
-			let hasValue = false;
-			let k;
+		let currentNode;
+		let currentPrefix;
+		let hasValue = false;
+		let k;
 
-			while (nodeStack.length) {
-				currentNode = nodeStack.pop();
-				currentPrefix = prefixStack.pop();
+		while (nodeStack.length) {
+			currentNode = nodeStack.pop();
+			currentPrefix = prefixStack.pop();
 
-				for (k in currentNode) {
-					if (k === TrieMap.SENTINEL) {
-						hasValue = true;
-						continue;
-					}
-
-					nodeStack.push(currentNode[k]);
-					prefixStack.push(
-						isString ? currentPrefix + k : currentPrefix.concat(k)
-					);
+			for (k in currentNode) {
+				if (k === TrieMap.SENTINEL) {
+					hasValue = true;
+					continue;
 				}
 
-				if (hasValue) {
-					yield [currentPrefix, currentNode[TrieMap.SENTINEL]];
-				}
+				nodeStack.push(currentNode[k]);
+				prefixStack.push(
+					isString ? currentPrefix + k : currentPrefix.concat(k)
+				);
 			}
-		};
+
+			if (hasValue) {
+				yield [currentPrefix, currentNode[TrieMap.SENTINEL]];
+			}
+		}
 	}
 
 	keys = this.prefixes.bind(this);
