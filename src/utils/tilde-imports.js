@@ -43,12 +43,12 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 	for (const packageJsonFilepath of packageJsonFilepathsArray) {
 		let normalizedPackageJsonFilepath = path.normalize(packageJsonFilepath);
 
-		if (packageJsonFilepath.startsWith('/')) {
+		if (normalizedPackageJsonFilepath.startsWith('/')) {
 			normalizedPackageJsonFilepath = normalizedPackageJsonFilepath.slice(1);
 		}
 
 		packageDirpathsTrie.add(
-			path.dirname(packageJsonFilepath).split('/')
+			path.dirname(normalizedPackageJsonFilepath).split('/')
 		);
 	}
 
