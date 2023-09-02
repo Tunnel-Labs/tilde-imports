@@ -58,7 +58,7 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 		}
 
 		const importerPackageDirpathPartArrays = packageDirpathsTrie.getPrefixes(
-			importerFilePath.slice(1).split('/')
+			path.resolve(importerFilePath).slice(1).split('/')
 		);
 
 		/** @type {string} */
