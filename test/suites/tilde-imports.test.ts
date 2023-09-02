@@ -14,7 +14,7 @@ describe('expands tilde imports correctly', () => {
 
 		expect(
 			expandTildeImport({
-				importerFilePath: path.join(basicProjectDirpath, 'src/index.js'),
+				importerFilepath: path.join(basicProjectDirpath, 'src/index.js'),
 				importSpecifier: '~/other.js'
 			})
 		).toBe(path.join(basicProjectDirpath, 'src/other.js'));
@@ -31,7 +31,7 @@ describe('expands tilde imports correctly', () => {
 
 		expect(
 			expandTildeImport({
-				importerFilePath: path.join(
+				importerFilepath: path.join(
 					packagesProjectDirpath,
 					'packages/package-a/src/index.js'
 				),
@@ -43,7 +43,7 @@ describe('expands tilde imports correctly', () => {
 
 		expect(
 			expandTildeImport({
-				importerFilePath: path.join(
+				importerFilepath: path.join(
 					packagesProjectDirpath,
 					'packages/package-b/src/index.js'
 				),
@@ -65,7 +65,7 @@ describe('expands tilde imports correctly', () => {
 
 		expect(
 			expandTildeImport({
-				importerFilePath: path.join(
+				importerFilepath: path.join(
 					categorizedPackagesProjectDirpath,
 					'category-a/package-a/src/index.js'
 				),
@@ -80,7 +80,7 @@ describe('expands tilde imports correctly', () => {
 
 		expect(
 			expandTildeImport({
-				importerFilePath: path.join(
+				importerFilepath: path.join(
 					categorizedPackagesProjectDirpath,
 					'category-a/package-b/src/index.js'
 				),
@@ -95,7 +95,7 @@ describe('expands tilde imports correctly', () => {
 
 		expect(
 			expandTildeImport({
-				importerFilePath: path.join(
+				importerFilepath: path.join(
 					categorizedPackagesProjectDirpath,
 					'category-b/package-c/src/index.js'
 				),
@@ -110,7 +110,7 @@ describe('expands tilde imports correctly', () => {
 
 		expect(
 			expandTildeImport({
-				importerFilePath: path.join(
+				importerFilepath: path.join(
 					categorizedPackagesProjectDirpath,
 					'category-b/package-d/src/index.js'
 				),

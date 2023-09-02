@@ -41,41 +41,47 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 
 	const packageDirpathsTrie = new Trie(Array);
 	for (const packageJsonFilepath of packageJsonFilepathsArray) {
+		let normalizedPackageJsonFilepath = path.normalize(packageJsonFilepath);
+
+		if (packageJsonFilepath.startsWith('/')) {
+			normalizedPackageJsonFilepath = normalizedPackageJsonFilepath.slice(1);
+		}
+
 		packageDirpathsTrie.add(
-			path.dirname(packageJsonFilepath).slice(1).split('/')
+			path.dirname(packageJsonFilepath).split('/')
 		);
 	}
 
 	/**
 		@param {object} args
 		@param {string} args.importSpecifier
-		@param {string} args.importerFilePath
+		@param {string} args.importerFilepath
 		@returns {string}
 	*/
-	return function expandTildeImport({ importSpecifier, importerFilePath }) {
+	return function expandTildeImport({ importSpecifier, importerFilepath }) {
 		if (!importSpecifier.startsWith('~')) {
 			return importSpecifier;
 		}
 
-		let normalizedImporterFilePath = path.normalize(importerFilePath);
-		if (normalizedImporterFilePath.startsWith('/')) {
-			normalizedImporterFilePath = normalizedImporterFilePath.slice(1);
+		let normalizedImporterFilepath = path.normalize(importerFilepath);
+		if (normalizedImporterFilepath.startsWith('/')) {
+			normalizedImporterFilepath = normalizedImporterFilepath.slice(1);
 		}
 
 		const importerPackageDirpathPartArrays = packageDirpathsTrie.getPrefixes(
-			normalizedImporterFilePath.split('/')
+			normalizedImporterFilepath.split('/')
 		);
 
 		/** @type {string} */
 		let importerPackageDirpathPartArray;
 		if (importerPackageDirpathPartArrays.length === 0) {
 			throw new Error(
-				`Could not find package root for importer file "${importerFilePath}"`
+				`Could not find package root for importer file "${importerFilepath}"`
 			);
 		} else if (importerPackageDirpathPartArrays.length > 1) {
 			console.warn(
 				'Found multiple package.json files for importer file "%s": %s',
-				importerFilePath,
+				importerFilepath,
 				importerPackageDirpathPartArrays
 					.map((importerPackageDirpathPartArray) =>
 						importerPackageDirpathPartArray.join('/')
