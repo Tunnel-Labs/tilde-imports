@@ -12,24 +12,46 @@ const Trie = require('./trie.js');
 	@returns
 */
 module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
-	const pnpmWorkspaceFilepath = path.join(
-		monorepoDirpath,
-		'pnpm-workspace.yaml'
-	);
-	if (!fs.existsSync(pnpmWorkspaceFilepath)) {
+	/** @type {string[]} */
+	let packageDirpathGlobs;
+
+	const packageJsonFilepath = path.join(monorepoDirpath, 'package.json');
+
+	if (!fs.existsSync(packageJsonFilepath)) {
 		throw new Error(
-			`Could not find pnpm-workspace.yaml file at "${pnpmWorkspaceFilepath}"`
+			`Could not find package.json file at "${packageJsonFilepath}"`
 		);
 	}
 
-	const packageDirpathGlobs = yaml.parse(
-		fs.readFileSync(pnpmWorkspaceFilepath, 'utf8')
-	)?.packages;
+	const packageJsonWorkspaces = JSON.parse(
+		fs.readFileSync(packageJsonFilepath, 'utf8')
+	).workspaces;
 
-	if (!packageDirpathGlobs) {
-		throw new Error(
-			`Could not find "packages" property in pnpm-workspace.yaml file at "${pnpmWorkspaceFilepath}"`
+	if (packageJsonWorkspaces !== undefined) {
+		packageDirpathGlobs = packageJsonWorkspaces;
+	} else {
+		const pnpmWorkspaceFilepath = path.join(
+			monorepoDirpath,
+			'pnpm-workspace.yaml'
 		);
+
+		if (!fs.existsSync(pnpmWorkspaceFilepath)) {
+			throw new Error(
+				`Monorepo package.json does not include "workspaces" property and could not find pnpm-workspace.yaml file at "${pnpmWorkspaceFilepath}"`
+			);
+		}
+
+		const pnpmWorkspacePackages = yaml.parse(
+			fs.readFileSync(pnpmWorkspaceFilepath, 'utf8')
+		)?.packages;
+
+		if (pnpmWorkspacePackages === undefined) {
+			throw new Error(
+				`Monorepo package.json does not include "workspaces" property and could not find "packages" property in pnpm-workspace.yaml file at "${pnpmWorkspaceFilepath}"`
+			);
+		}
+
+		packageDirpathGlobs = pnpmWorkspacePackages;
 	}
 
 	const packageJsonFilepathsArray = glob.sync(
