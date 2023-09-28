@@ -18,6 +18,13 @@ describe('expands tilde imports correctly', () => {
 				importSpecifier: '~/other.js'
 			})
 		).toBe(path.join(basicProjectDirpath, 'src/other.js'));
+
+		expect(
+			expandTildeImport({
+				importerFilepath: path.join(basicProjectDirpath, 'src'),
+				importSpecifier: '~'
+			})
+		).toBe(basicProjectDirpath);
 	});
 
 	test('expands tilde imports from fixtures/packages-project', () => {
