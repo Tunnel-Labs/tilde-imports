@@ -1,4 +1,4 @@
-const TrieMap = require('./trie-map.js');
+import TrieMap from './trie-map.js';
 
 /**
 	Mnemonist Trie
@@ -12,10 +12,10 @@ const TrieMap = require('./trie-map.js');
 	is the very same. The Trie just does not let you set values and only
 	considers the existence of the given prefixes.
 */
-class Trie extends TrieMap {
-	static SENTINEL = String.fromCharCode(0);
+export default class Trie<K extends keyof any> extends TrieMap<K, true> {
+	static SENTINEL = String.fromCharCode(0) as '\0';
 
-	constructor(token) {
+	constructor(token?: ArrayConstructor) {
 		super(token);
 	}
 
@@ -26,27 +26,24 @@ class Trie extends TrieMap {
 		@param  {Iterable} iterable   - Target iterable.
 		@returns {Trie}
 	*/
-	static from(array) {
-		const trie = new Trie();
+	static from<K extends keyof any>(array: Iterable<K>): Trie<K> {
+		const trie = new Trie<K>();
 		for (const value of array) {
-			trie.add(value);
+			trie.add(value as any);
 		}
 		return trie;
 	}
 
 	/**
 		Method used to add the given prefix to the trie.
-
-		@param {string | Array} prefix - Prefix to follow.
-		@returns {Trie}
+		@param prefix - Prefix to follow.
 	*/
-	add(prefix) {
+	add(prefix: string | Array<K>): this {
 		let node = this.root;
 		let token;
 
 		for (var i = 0, l = prefix.length; i < l; i++) {
-			token = prefix[i];
-
+			token = prefix[i]!;
 			node = node[token] || (node[token] = {});
 		}
 
@@ -61,14 +58,14 @@ class Trie extends TrieMap {
 	/**
 		Get all the items in the trie that are prefixes of the given value.
 	*/
-	getPrefixes(value) {
-		const prefixes = [];
+	getPrefixes(value: string | Array<K>) {
+		const prefixes: any[] = [];
 		let node = this.root;
 		let token;
 
 		for (let i = 0; i < value.length; i++) {
-			token = value[i];
-			node = node[token];
+			token = value[i]!;
+			node = node[token]!;
 
 			if (typeof node === 'undefined') return prefixes;
 
@@ -80,20 +77,18 @@ class Trie extends TrieMap {
 
 	/**
 		Method used to retrieve every item in the trie with the given prefix.
-
-		@param  {string | Array} prefix - Prefix to query.
 		@returns {Array}
 	*/
-	find(prefix) {
+	find(prefix: string | Array<K>) {
 		const isString = typeof prefix === 'string';
 
 		let node = this.root;
-		const matches = [];
+		const matches: any[] = [];
 		let token;
 
 		for (let i = 0; i < prefix.length; i++) {
-			token = prefix[i];
-			node = node[token];
+			token = prefix[i]!;
+			node = node[token]!;
 
 			if (typeof node === 'undefined') return matches;
 		}
@@ -104,8 +99,8 @@ class Trie extends TrieMap {
 		let k;
 
 		while (nodeStack.length) {
-			prefix = prefixStack.pop();
-			node = nodeStack.pop();
+			prefix = prefixStack.pop()!;
+			node = nodeStack.pop()!;
 
 			for (k in node) {
 				if (k === Trie.SENTINEL) {
@@ -113,14 +108,15 @@ class Trie extends TrieMap {
 					continue;
 				}
 
-				nodeStack.push(node[k]);
-				prefixStack.push(isString ? prefix + k : prefix.concat(k));
+				nodeStack.push(node[k]!);
+				prefixStack.push(isString ? prefix + k : prefix.concat(k as any));
 			}
 		}
 
 		return matches;
 	}
 
+	// @ts-expect-error: any
 	inspect() {
 		const proxy = new Set();
 		const iterator = this.keys();
@@ -142,13 +138,12 @@ class Trie extends TrieMap {
 	}
 
 	// Dropping irrelevant methods
-	set = undefined;
-	get = undefined;
-	values = undefined;
-	entries = undefined;
+	set = undefined as any;
+	get = undefined as any;
+	values = undefined as any;
+	entries = undefined as any;
 
-	[Symbol.iterator] = this.keys.bind(this);
+	[Symbol.iterator] = this.keys.bind(this) as any;
+	// @ts-expect-error: wtf
 	[Symbol.for('nodejs.util.inspect.custom')] = this.inspect.bind(this);
 }
-
-module.exports = Trie;

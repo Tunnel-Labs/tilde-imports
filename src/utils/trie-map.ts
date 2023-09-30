@@ -1,3 +1,5 @@
+import type { Node } from '~/types/node.js';
+
 /**
 	Mnemonist TrieMap
 	==================
@@ -10,33 +12,33 @@
 	is the very same. The Trie just does not let you set values and only
 	considers the existence of the given prefixes.
 */
-class TrieMap {
-	static SENTINEL = String.fromCharCode(0);
+export default class TrieMap<K extends keyof any, V> {
+	static SENTINEL = String.fromCharCode(0) as '\0';
+	mode: 'array' | 'string';
+	root: Node;
+	size: number;
 
 	/**
 		Static @.from function taking an arbitrary iterable & converting it into
 		a trie.
 
-		@param  {Iterable} iterable   - Target iterable.
-		@return {TrieMap}
+		@param iterable - Target iterable.
 	*/
-	static from(object) {
-		const trie = new TrieMap();
+	static from<K extends keyof any, V>(object: Record<K, V>): TrieMap<K, V> {
+		const trie = new TrieMap<K, V>();
 		for (const [key, value] of Object.entries(object)) {
 			trie.set(key, value);
 		}
 		return trie;
 	}
 
-	constructor(token) {
+	constructor(token?: ArrayConstructor) {
 		this.mode = token === Array ? 'array' : 'string';
 		this.clear();
 	}
 
 	/**
 		Method used to clear the trie.
-
-		@returns {undefined}
 	*/
 	clear() {
 		this.root = {};
@@ -45,18 +47,15 @@ class TrieMap {
 
 	/**
 		Method used to set the value of the given prefix in the trie.
-
-		@param {string | Array} prefix - Prefix to follow.
-		@param {any} value - Value for the prefix.
-		@returns {TrieMap}
+		@param prefix - Prefix to follow.
+		@param value - Value for the prefix.
 	*/
-	set(prefix, value) {
-		let node = this.root;
-		let token;
+	set(prefix: string | Array<K>, value: any): this {
+		let node: Node = this.root;
+		let token: keyof any;
 
 		for (let i = 0; i < prefix.length; i++) {
-			token = prefix[i];
-
+			token = prefix[i]!;
 			node = node[token] || (node[token] = {});
 		}
 
@@ -70,18 +69,18 @@ class TrieMap {
 
 	/**
 		Method used to update the value of the given prefix in the trie.
-
-		@param  {string|array} prefix - Prefix to follow.
-		@param  {(oldValue: any | undefined) => any} updateFunction - Update value visitor callback.
-		@return {TrieMap}
+		@param  prefix - Prefix to follow.
+		@param updateFunction - Update value visitor callback.
 	*/
-	update(prefix, updateFunction) {
+	update(
+		prefix: string | Array<K>,
+		updateFunction: (oldValue: any | undefined) => any
+	): this {
 		let node = this.root;
 		let token;
 
 		for (let i = 0; i < prefix.length; i++) {
-			token = prefix[i];
-
+			token = prefix[i]!;
 			node = node[token] || (node[token] = {});
 		}
 
@@ -96,17 +95,15 @@ class TrieMap {
 	/**
 		Method used to return the value sitting at the end of the given prefix or
 		undefined if none exist.
-
-		@param  {string | Array} prefix - Prefix to follow.
-		@return {any | undefined}
+		@param prefix - Prefix to follow.
 	*/
-	get(prefix) {
+	get(prefix: string | Array<K>): K | undefined {
 		let node = this.root;
-		let token;
+		let token: keyof any;
 
 		for (let i = 0; i < prefix.length; i++) {
-			token = prefix[i];
-			node = node[token];
+			token = prefix[i]!;
+			node = node[token]!;
 
 			// Prefix does not exist
 			if (typeof node === 'undefined') return;
@@ -119,21 +116,19 @@ class TrieMap {
 
 	/**
 		Method used to delete a prefix from the trie.
-
-		@param  {string | Array} prefix - Prefix to delete.
-		@returns {boolean}
+		@param prefix - Prefix to delete.
 	*/
-	delete(prefix) {
+	delete(prefix: string | Array<K>): boolean {
 		let node = this.root;
 		let toPrune = null;
-		let tokenToPrune = null;
+		let tokenToPrune: keyof any | null = null;
 		let parent;
-		let token;
+		let token: keyof any;
 
 		for (let i = 0; i < prefix.length; i++) {
-			token = prefix[i];
+			token = prefix[i]!;
 			parent = node;
-			node = node[token];
+			node = node[token]!;
 
 			// Prefix does not exist
 			if (typeof node === 'undefined') return false;
@@ -156,7 +151,7 @@ class TrieMap {
 
 		this.size--;
 
-		if (toPrune) delete toPrune[tokenToPrune];
+		if (toPrune) delete toPrune[tokenToPrune!];
 		else delete node[TrieMap.SENTINEL];
 
 		return true;
@@ -164,17 +159,15 @@ class TrieMap {
 
 	/**
 		Method used to assert whether the given prefix exists in the TrieMap.
-
-		@param {string | Array} prefix - Prefix to check.
-		@returns {boolean}
+		@param prefix - Prefix to check.
 	*/
-	has(prefix) {
+	has(prefix: string | Array<K>): boolean {
 		let node = this.root;
 		let token;
 
 		for (let i = 0; i < prefix.length; i++) {
-			token = prefix[i];
-			node = node[token];
+			token = prefix[i]!;
+			node = node[token]!;
 
 			if (typeof node === 'undefined') return false;
 		}
@@ -184,20 +177,18 @@ class TrieMap {
 
 	/**
 		Method used to retrieve every item in the trie with the given prefix.
-
-		@param {string | Array} prefix - Prefix to query.
-		@returns {array}
+		@param prefix - Prefix to query.
 	*/
-	find(prefix) {
+	find(prefix: string | Array<K>): Array<[K, V]> {
 		const isString = typeof prefix === 'string';
 
 		let node = this.root;
-		const matches = [];
+		const matches: Array<[any, V]> = [];
 		let token;
 
 		for (let i = 0; i < prefix.length; i++) {
-			token = prefix[i];
-			node = node[token];
+			token = prefix[i]!;
+			node = node[token]!;
 
 			if (typeof node === 'undefined') return matches;
 		}
@@ -208,8 +199,8 @@ class TrieMap {
 		let k;
 
 		while (nodeStack.length) {
-			prefix = prefixStack.pop();
-			node = nodeStack.pop();
+			prefix = prefixStack.pop()!;
+			node = nodeStack.pop()!;
 
 			for (k in node) {
 				if (k === TrieMap.SENTINEL) {
@@ -217,8 +208,8 @@ class TrieMap {
 					continue;
 				}
 
-				nodeStack.push(node[k]);
-				prefixStack.push(isString ? prefix + k : prefix.concat(k));
+				nodeStack.push(node[k]!);
+				prefixStack.push(isString ? prefix + k : prefix.concat(k as any));
 			}
 		}
 
@@ -228,9 +219,9 @@ class TrieMap {
 	/**
 		Method returning an iterator over the trie's values.
 
-		@param  {string|array} [prefix] - Optional starting prefix.
+		@param [prefix] - Optional starting prefix.
 	*/
-	*values(prefix) {
+	*values(prefix?: string | Array<K>) {
 		let node = this.root;
 		const nodeStack = [];
 		let token;
@@ -238,8 +229,8 @@ class TrieMap {
 		// Resolving initial prefix
 		if (prefix) {
 			for (let i = 0; i < prefix.length; i++) {
-				token = prefix[i];
-				node = node[token];
+				token = prefix[i]!;
+				node = node[token]!;
 
 				// If the prefix does not exist, we return an empty iterator
 				if (typeof node === 'undefined') return [][Symbol.iterator]();
@@ -261,23 +252,22 @@ class TrieMap {
 					continue;
 				}
 
-				nodeStack.push(currentNode[k]);
+				nodeStack.push(currentNode![k]);
 			}
 
 			if (hasValue) {
-				yield currentNode[TrieMap.SENTINEL];
+				yield currentNode![TrieMap.SENTINEL];
 			}
 		}
 	}
 
 	/**
 		Method returning an iterator over the trie's prefixes.
-
-		@param  {string|array} [prefix] - Optional starting prefix.
+		@param  [prefix] - Optional starting prefix.
 	*/
-	*prefixes(prefix) {
+	*prefixes(prefix?: string | Array<K>) {
 		let node = this.root;
-		const nodeStack = [];
+		const nodeStack: Node[] = [];
 		const prefixStack = [];
 		let token;
 
@@ -286,8 +276,8 @@ class TrieMap {
 		// Resolving initial prefix
 		if (prefix) {
 			for (let i = 0; i < prefix.length; i++) {
-				token = prefix[i];
-				node = node[token];
+				token = prefix[i]!;
+				node = node[token]!;
 
 				// If the prefix does not exist, we return an empty iterator
 				if (typeof node === 'undefined') return [][Symbol.iterator]();
@@ -314,9 +304,9 @@ class TrieMap {
 					continue;
 				}
 
-				nodeStack.push(currentNode[k]);
+				nodeStack.push(currentNode![k]!);
 				prefixStack.push(
-					isString ? currentPrefix + k : currentPrefix.concat(k)
+					isString ? currentPrefix + k : currentPrefix!.concat(k as any)
 				);
 			}
 
@@ -329,21 +319,21 @@ class TrieMap {
 	/**
 		Method returning an iterator over the trie's entries.
 
-		@param  {string | Array} [prefix] - Optional starting prefix.
+		@param [prefix] - Optional starting prefix.
 	*/
-	*entries(prefix) {
+	*entries(prefix?: string | Array<K>) {
 		let node = this.root;
 		const nodeStack = [];
 		const prefixStack = [];
-		let token;
+		let token: keyof any;
 
 		const isString = this.mode === 'string';
 
 		// Resolving initial prefix
 		if (prefix) {
 			for (let i = 0; i < prefix.length; i++) {
-				token = prefix[i];
-				node = node[token];
+				token = prefix[i]!;
+				node = node[token]!;
 
 				// If the prefix does not exist, we return an empty iterator
 				if (typeof node === 'undefined') return [][Symbol.iterator]();
@@ -370,14 +360,14 @@ class TrieMap {
 					continue;
 				}
 
-				nodeStack.push(currentNode[k]);
+				nodeStack.push(currentNode![k]);
 				prefixStack.push(
-					isString ? currentPrefix + k : currentPrefix.concat(k)
+					isString ? currentPrefix + k : currentPrefix!.concat(k as any)
 				);
 			}
 
 			if (hasValue) {
-				yield [currentPrefix, currentNode[TrieMap.SENTINEL]];
+				yield [currentPrefix, currentNode![TrieMap.SENTINEL]];
 			}
 		}
 	}
@@ -403,11 +393,10 @@ class TrieMap {
 		return proxy;
 	}
 
+	// @ts-expect-error: wtf
 	[Symbol.for('nodejs.util.inspect.custom')] = this.inspect.bind(this);
 
 	toJSON() {
 		return this.root;
 	}
 }
-
-module.exports = TrieMap;

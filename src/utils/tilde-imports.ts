@@ -1,19 +1,16 @@
-// @ts-check
+import path from 'pathe';
+import fs from 'node:fs';
+import yaml from 'yaml';
+import glob from 'fast-glob';
+import Trie from './trie.js';
 
-const path = require('pathe');
-const fs = require('fs');
-const yaml = require('yaml');
-const glob = require('fast-glob');
-const Trie = require('./trie.js');
-
-/**
-	@param {object} args
-	@param {string} args.monorepoDirpath
-	@returns
-*/
-module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
-	/** @type {string[]} */
-	let packageDirpathGlobs;
+export const createTildeImportExpander = ({
+	monorepoDirpath
+}: {
+	monorepoDirpath: string;
+}) => {
+	let packageDirpathGlobs: string[];
+	const partCaseMap: Record<number, Map<string, string>> = {};
 
 	const packageJsonFilepath = path.join(monorepoDirpath, 'package.json');
 
@@ -55,7 +52,7 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 	}
 
 	const packageJsonFilepathsArray = glob.sync(
-		packageDirpathGlobs.map((/** @type {string} */ packageDirpathGlob) =>
+		packageDirpathGlobs.map((packageDirpathGlob: string) =>
 			path.join(monorepoDirpath, packageDirpathGlob, 'package.json')
 		),
 		{ absolute: true }
@@ -69,23 +66,35 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 			normalizedPackageJsonFilepath = normalizedPackageJsonFilepath.slice(1);
 		}
 
-		packageDirpathsTrie.add(
-			path.dirname(normalizedPackageJsonFilepath).split('/')
+		const normalizedPackageDirpath = path.dirname(
+			normalizedPackageJsonFilepath
 		);
+
+		const normalizedParts = normalizedPackageDirpath.toLowerCase().split('/');
+		const casedParts = normalizedPackageDirpath.split('/');
+
+		for (const [partIndex, part] of normalizedParts.entries()) {
+			(partCaseMap[partIndex] ??= new Map()).set(part, casedParts[partIndex]!);
+		}
+
+		packageDirpathsTrie.add(normalizedParts);
 	}
 
-	/**
-		@param {object} args
-		@param {string} args.importSpecifier
-		@param {string} args.importerFilepath
-		@returns {string}
-	*/
-	return function expandTildeImport({ importSpecifier, importerFilepath }) {
+	return function expandTildeImport({
+		importSpecifier,
+		importerFilepath
+	}: {
+		importSpecifier: string;
+		importerFilepath: string;
+	}): string {
 		if (!importSpecifier.startsWith('~')) {
 			return importSpecifier;
 		}
 
-		let normalizedImporterFilepath = path.normalize(importerFilepath);
+		let normalizedImporterFilepath = path
+			.normalize(importerFilepath)
+			.toLowerCase();
+
 		if (normalizedImporterFilepath.startsWith('/')) {
 			normalizedImporterFilepath = normalizedImporterFilepath.slice(1);
 		}
@@ -113,21 +122,27 @@ module.exports.createTildeImportExpander = ({ monorepoDirpath }) => {
 			);
 		}
 
-		importerPackageDirpathPartArray = /** @type {string} */ (
-			importerPackageDirpathPartArrays[0]
-		);
+		importerPackageDirpathPartArray = importerPackageDirpathPartArrays[0];
 
 		// If the module starts with `~/`, it is relative to the `src/` folder of the package.
 		if (importSpecifier.startsWith('~/')) {
 			return path.join(
 				'/',
-				...importerPackageDirpathPartArray,
+				...importerPackageDirpathPartArray.map((part: string, index: number) =>
+					(partCaseMap[index] ??= new Map()).has(part)
+						? partCaseMap[index]!.get(part)
+						: part
+				),
 				importSpecifier.replace('~/', 'src/')
 			);
 		} else {
 			return path.join(
 				'/',
-				...importerPackageDirpathPartArray,
+				...importerPackageDirpathPartArray.map((part: string, index: number) =>
+					(partCaseMap[index] ??= new Map()).has(part)
+						? partCaseMap[index]!.get(part)
+						: part
+				),
 				importSpecifier.replace('~', '')
 			);
 		}
