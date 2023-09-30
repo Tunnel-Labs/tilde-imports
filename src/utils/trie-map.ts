@@ -1,4 +1,4 @@
-import type { Node } from '~/types/node.js';
+import type { Node } from '../types/node.js';
 
 /**
 	Mnemonist TrieMap

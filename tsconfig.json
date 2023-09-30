@@ -2,10 +2,7 @@
 	"extends": "lionconfig/tsconfig.json",
 	"compilerOptions": {
 		"outDir": "dist",
+		"rootDir": "src"
 	},
-	"references": [
-		{
-			"path": "./tsconfig.test.json"
-		}
-	]
+	"include": ["./src"]
 }
