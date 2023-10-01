@@ -1,10 +1,10 @@
 {
 	"name": "tilde-imports",
-	"version": "3.1.0",
+	"version": "3.1.2",
 	"type": "module",
 	"exports": "./src/index.ts",
 	"scripts": {
-		"build": "ts-node ./scripts/build.ts",
+		"build": "tsx ./scripts/build.ts",
 		"test": "vitest run"
 	},
 	"dependencies": {
